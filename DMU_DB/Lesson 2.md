@@ -7,3 +7,10 @@ Lecture 2: DBMS
   - Metadata is data of data
 
 * A DMBS allows us to interact with dbs in a human friendly way.
+
+* Database -> DBMS -> User
+
+* Advantages of DMBS:
+  - Data sharing, security, integration, inconsistency, access
+  - Decision making
+  - End-user productivity
