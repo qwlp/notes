@@ -36,7 +36,31 @@ Chapter 1: Database Systems
 
 ## Types of Databases
 
-* 
+* A DBMS can be used to build many types of databases including: based on number of users/data stored:
+  - Single-user database —  supports only one user at a time.(Desktop Database —  if ran on a PC)
+  - Multiuser database —  database that supports multiple concurrent users.
+  - Workgroup database —  a multiuser database that supports less than 50 users, usually used for a specific department of an organization
+  - Enterprise database (more than 50 users, usually hundreds) —  The overall company data representation, which provides support for present and expected future needs
+* Based on location:
+  - Centralized database —  if the database is located at a single site
+  - Distributed database —  a logically related database that is stored in two or more physically independent sites.
+  - Cloud database —  a database that is created and maintained using cloud services, such as Azure or AWS.
+* Based on the type of data stored:
+  - General-purpose database —  contains a wide variety of data used in multiple disciplines. (A census database)
+  - Discipline-specific database —  focuses on a specific subject area (CompuStat, CRSP, GIS)
+* The most popular way though is based on how they will be used and on the time sensitivity of the information gathered:
+  - Operational database (aka. Online Transaction Processing (OLTP), Transactional database, production database) —  a database designed primarily to support a company's day-to-day operations. (sales, payment, customers...)
+  - Analytical database —  focuses on storing historical data and business metrics used for tactical and strategic decision making. (pricing decisions, sales forecasts, market strategies). It usually consists of two main components:
+    + Data warehouse —  a specialized database that stored historical and aggregated data in a format optimized for decision making. It usually consists of two main components:
+    + Online Analytical Processing (OLAP): set of tools that provide advanced data analysis for retrieving, processing, and modeling data from the data warehouse
+    + This has evolved into its own discipline called business intelligence —  a set of tools and processes used to capture, collect, integrate, store and analyze data to support business decision making.
+* Based on how the data is structured:
+  - Unstructured data —  data that exists in its original form - that is in the format in which it was collected
+  - Structured data —  data that has been formatted to facilitate storage, use and information generation
+  - Semistructured data —  data that has already been processed to some extent.
+    
+  
+
 
 
 
