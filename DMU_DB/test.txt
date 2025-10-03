@@ -1,0 +1,80 @@
+@startuml
+' Use the ER diagram class explicitly
+' This resolves the "assumed diagram class" issue
+!theme toy
+title Synaptic Model (Incubator Model)
+
+' Define the entities
+entity Company {
+  *Name (PK)
+  --
+  Sector
+  Technical_Description
+  Stage
+  Actual_Capacity_of_Production
+  Cost
+  Length_of_Company
+  Money_Requested
+  Level_of_Growth
+  Ambitions
+}
+
+entity Application {
+  *Application_ID (PK)
+  --
+  Date_Submitted
+  Status
+}
+
+entity Funder {
+  *Name (PK)
+  --
+  Sector
+  Industry
+  Nature
+  Type_of_Company
+  Type_of_Venture
+}
+
+entity MarketBuyer {
+  *BuyerID (PK)
+  --
+  Name
+  Industry
+  Type_of_Company
+  Requirements
+}
+
+entity EmployeeRole {
+  *Role_Name (PK)
+  --
+  Description
+}
+
+entity SystemUser {
+  *Employee_ID (PK)
+  --
+  Name
+  Contact
+}
+
+' Define the relationships using ER notation
+
+' Company SUBMITS Application (1 to many)
+Company ||--o{ Application : SUBMITS
+
+' Application IS_FOR Funder (many to 1)
+Application }o--|| Funder : IS_FOR
+
+' Company RECEIVES_FUNDING_FROM Funder (many to many)
+Company }|--|{ Funder : RECEIVES_FUNDING_FROM
+
+' Company TARGETS MarketBuyer (many to many)
+Company }|--|{ MarketBuyer : TARGETS
+
+' SystemUser PLAYS EmployeeRole (many to 1)
+SystemUser }o--|| EmployeeRole : PLAYS
+
+' SystemUser MANAGES Company (many to many)
+SystemUser }|--|{ Company : MANAGES
+@enduml
