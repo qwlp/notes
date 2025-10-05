@@ -1,103 +1,99 @@
-### 1\. Company $\text{SUBMITS}$ Application $\text{(1-to-Many)}$
+## 1\. One-to-Many Relationships
 
-This relationship links the $\text{Company}$ table to the $\text{Application}$ table, with $\text{Company}$'s $\text{Name}$ being the foreign key in $\text{Application}$.
 
+| Relationship | Tables Involved | Constraint Logic |
+| :--- | :--- | :--- |
+| **Company SUBMITS Application** | `Application` references `Company` | **ON DELETE CASCADE** (Delete company, delete applications) |
+| **Application IS\_FOR Funder** | `Application` references `Funder` | **ON DELETE RESTRICT** (Prevents deleting a funder with pending applications) |
+| **SystemUser PLAYS EmployeeRole** | `SystemUser` references `EmployeeRole` | **ON DELETE SET NULL** (If a role is deleted, users' role ID is set to null) |
 
 ```sql
--- Add the foreign key in Application referencing Company
-
+-- Company SUBMITS Application (1:N)
 ALTER TABLE Application
 ADD COLUMN Company_Name VARCHAR(255),
 ADD CONSTRAINT fk_application_company
     FOREIGN KEY (Company_Name)
     REFERENCES Company(Name)
-    ON DELETE CASCADE  -- If a Company is deleted, its Applications are deleted
-    ON UPDATE CASCADE; -- If a Company's Name changes, it updates in Application
 
-```
+    ON DELETE CASCADE
+    ON UPDATE CASCADE;
 
------
-
-### 2\. Application $\text{IS\_FOR}$ Funder $\text{(Many-to-1)}$
-
-
-This relationship links the $\text{Application}$ table to the $\text{Funder}$ table, with $\text{Funder}$'s $\text{Name}$ being the foreign key in $\text{Application}$.
-
-
-```sql
--- Add the foreign key in Application referencing Funder
+-- Application IS_FOR Funder (N:1)
 ALTER TABLE Application
-ADD COLUMN Funder_Name VARCHAR(255),
 
+ADD COLUMN Funder_Name VARCHAR(255),
 ADD CONSTRAINT fk_application_funder
     FOREIGN KEY (Funder_Name)
     REFERENCES Funder(Name)
-    ON DELETE RESTRICT  -- Prevent deleting a Funder if there are Applications for them
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE;
+
+-- SystemUser PLAYS EmployeeRole (N:1)
+ALTER TABLE SystemUser
+ADD COLUMN Role_Name VARCHAR(255),
+ADD CONSTRAINT fk_systemuser_role
+    FOREIGN KEY (Role_Name)
+    REFERENCES EmployeeRole(Role_Name)
+
+    ON DELETE SET NULL
+
     ON UPDATE CASCADE;
 ```
 
 -----
 
-### 3\. Company $\text{RECEIVES\_FUNDING\_FROM}$ Funder $\text{(Many-to-Many)}$
-
-A many-to-many relationship requires a new **junction table** (or associative entity). Let's call it $\text{Company\_Funder}$.
+## 2\. Many-to-Many Relationships
 
 
-#### Step 3a: Create the Junction Table
+These relationships require the creation of an **associative (junction) table** to link the two primary entities.
+
+### A. Company RECEIVES\_FUNDING\_FROM Funder
+
+Creates the `Company_Funder` table.
 
 ```sql
+-- Step 1: Create the junction table
 CREATE TABLE Company_Funder (
     Company_Name VARCHAR(255) NOT NULL,
+
     Funder_Name VARCHAR(255) NOT NULL,
     PRIMARY KEY (Company_Name, Funder_Name)
 );
-```
 
-#### Step 3b: Add Foreign Keys to the Junction Table
-
-
-```sql
--- Add the foreign key referencing Company
+-- Step 2: Add foreign key referencing Company
 ALTER TABLE Company_Funder
 ADD CONSTRAINT fk_cf_company
     FOREIGN KEY (Company_Name)
     REFERENCES Company(Name)
-
-    ON DELETE CASCADE -- If Company is deleted, its funding record is deleted
+    ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- Add the foreign key referencing Funder
+-- Step 3: Add foreign key referencing Funder
 ALTER TABLE Company_Funder
 ADD CONSTRAINT fk_cf_funder
     FOREIGN KEY (Funder_Name)
-
     REFERENCES Funder(Name)
-    ON DELETE CASCADE -- If Funder is deleted, its funding record is deleted
+    ON DELETE CASCADE
     ON UPDATE CASCADE;
 ```
 
 -----
 
+### B. Company TARGETS MarketBuyer
 
-### 4\. Company $\text{TARGETS}$ MarketBuyer $\text{(Many-to-Many)}$
 
-
-This many-to-many relationship also requires a **junction table**. Let's call it $\text{Company\_MarketBuyer}$.
-
-#### Step 4a: Create the Junction Table
+Creates the `Company_MarketBuyer` table. (Assuming `MarketBuyer.BuyerID` is an `INT`).
 
 ```sql
+-- Step 1: Create the junction table
 CREATE TABLE Company_MarketBuyer (
     Company_Name VARCHAR(255) NOT NULL,
-    MarketBuyer_ID INT NOT NULL, -- Assuming BuyerID is an INT
+    MarketBuyer_ID INT NOT NULL,
     PRIMARY KEY (Company_Name, MarketBuyer_ID)
+
 );
-```
 
-#### Step 4b: Add Foreign Keys to the Junction Table
-
-```sql
--- Add the foreign key referencing Company
+-- Step 2: Add foreign key referencing Company
 ALTER TABLE Company_MarketBuyer
 ADD CONSTRAINT fk_cmb_company
     FOREIGN KEY (Company_Name)
@@ -105,77 +101,45 @@ ADD CONSTRAINT fk_cmb_company
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- Add the foreign key referencing MarketBuyer
+-- Step 3: Add foreign key referencing MarketBuyer
 ALTER TABLE Company_MarketBuyer
 ADD CONSTRAINT fk_cmb_marketbuyer
     FOREIGN KEY (MarketBuyer_ID)
-
     REFERENCES MarketBuyer(BuyerID)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 ```
 
-*(**Note**: I assumed $\text{MarketBuyer\_ID}$ is an $\text{INT}$ based on typical ID naming conventions. Adjust the data type if it's different in your $\text{MarketBuyer}$ table.)*
-
 -----
 
-### 5\. SystemUser $\text{PLAYS}$ EmployeeRole $\text{(Many-to-1)}$
+### C. SystemUser MANAGES Company
 
-This relationship links the $\text{SystemUser}$ table to the $\text{EmployeeRole}$ table, with $\text{EmployeeRole}$'s $\text{Role\_Name}$ being the foreign key in $\text{SystemUser}$.
+Creates the `SystemUser_Company` table. (Assuming `SystemUser.Employee_ID` is an `INT`).
 
 
 ```sql
--- Add the foreign key in SystemUser referencing EmployeeRole
-ALTER TABLE SystemUser
-ADD COLUMN Role_Name VARCHAR(255),
-ADD CONSTRAINT fk_systemuser_role
-
-    FOREIGN KEY (Role_Name)
-    REFERENCES EmployeeRole(Role_Name)
-    ON DELETE SET NULL -- If a Role is deleted, SystemUsers in that role become NULL
-    ON UPDATE CASCADE;
-```
-
------
-
-### 6\. SystemUser $\text{MANAGES}$ Company $\text{(Many-to-Many)}$
-
-
-This many-to-many relationship requires a **junction table**. Let's call it $\text{SystemUser\_Company}$.
-
-
-#### Step 6a: Create the Junction Table
-
-```sql
+-- Step 1: Create the junction table
 CREATE TABLE SystemUser_Company (
-    Employee_ID INT NOT NULL, -- Assuming Employee_ID is an INT
-    Company_Name VARCHAR(255) NOT NULL,
+    Employee_ID INT NOT NULL,
 
+    Company_Name VARCHAR(255) NOT NULL,
     PRIMARY KEY (Employee_ID, Company_Name)
 );
-```
 
+-- Step 2: Add foreign key referencing SystemUser
 
-#### Step 6b: Add Foreign Keys to the Junction Table
-
-```sql
--- Add the foreign key referencing SystemUser
 ALTER TABLE SystemUser_Company
-
 ADD CONSTRAINT fk_suc_systemuser
     FOREIGN KEY (Employee_ID)
     REFERENCES SystemUser(Employee_ID)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
--- Add the foreign key referencing Company
+-- Step 3: Add foreign key referencing Company
 ALTER TABLE SystemUser_Company
 ADD CONSTRAINT fk_suc_company
     FOREIGN KEY (Company_Name)
     REFERENCES Company(Name)
     ON DELETE CASCADE
-
     ON UPDATE CASCADE;
-
 ```
-
