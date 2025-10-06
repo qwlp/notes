@@ -1,4 +1,5 @@
 # Categories
+
 The **five commonly used categories of SQL** are:
 
 1. **Data Query Language (DQL)**
